@@ -1,0 +1,7 @@
+This was brought to the main branch, but I had
+if (document == IntPtr.Zero)
+            {
+                Dispose();
+                throw new PdfException((PdfError)NativeMethods.FPDF_GetLastError());
+            }
+I didn't include this new one in OC

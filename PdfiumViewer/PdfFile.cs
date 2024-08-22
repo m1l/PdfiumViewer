@@ -188,11 +188,17 @@ namespace PdfiumViewer
         private void LoadBookmarks(PdfBookmarkCollection bookmarks, IntPtr bookmark)
         {
             if (bookmark == IntPtr.Zero)
-                return;
-
+                return;          
             bookmarks.Add(LoadBookmark(bookmark));
-            while ((bookmark = NativeMethods.FPDF_BookmarkGetNextSibling(_document, bookmark)) != IntPtr.Zero)
+            int maxcount = 16;
+            int i = 1;
+            while ((bookmark = NativeMethods.FPDF_BookmarkGetNextSibling(_document, bookmark)) != IntPtr.Zero 
+                && i < maxcount)
+            {
+                i++;
+                Debug.WriteLine(bookmarks[bookmarks.Count - 1].Title);
                 bookmarks.Add(LoadBookmark(bookmark));
+            }
         }
 
         private PdfBookmark LoadBookmark(IntPtr bookmark)
@@ -207,9 +213,10 @@ namespace PdfiumViewer
             //if (Action != IntPtr.Zero)
             //    ActionType = NativeMethods.FPDF_ActionGetType(Action);
 
-            var child = NativeMethods.FPDF_BookmarkGetFirstChild(_document, bookmark);
-            if (child != IntPtr.Zero)
-                LoadBookmarks(result.Children, child);
+            //removed this - only intersted in first level, and prevents occasional stack overflow
+            //var child = NativeMethods.FPDF_BookmarkGetFirstChild(_document, bookmark);
+            //if (child != IntPtr.Zero)
+            //    LoadBookmarks(result.Children, child, level+1);
 
             return result;
         }
