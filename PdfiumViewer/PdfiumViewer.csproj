@@ -2,8 +2,9 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <TargetFrameworks>net20;net45;netcoreapp3.1;net6.0-windows</TargetFrameworks>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platforms>AnyCPU;x64;x86;ARM64</Platforms>
+    <TargetFrameworks>net20;net45;net10.0-windows</TargetFrameworks>
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>PdfViewer</AssemblyTitle>
     <Company>Pieter van Ginkel; Bluegrams</Company>

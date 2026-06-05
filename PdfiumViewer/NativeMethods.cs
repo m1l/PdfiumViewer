@@ -18,24 +18,71 @@ namespace PdfiumViewer
             // First try the custom resolving mechanism.
 
             string fileName = PdfiumResolver.GetPdfiumFileName();
-            if (fileName != null && File.Exists(fileName) && LoadLibrary(fileName) != IntPtr.Zero)
+            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName) && LoadLibrary(fileName) != IntPtr.Zero)
                 return;
 
             // Load the platform dependent Pdfium.dll if it exists.
 
-            if (!TryLoadNativeLibrary(AppDomain.CurrentDomain.RelativeSearchPath))
-                TryLoadNativeLibrary(Path.GetDirectoryName(typeof(NativeMethods).Assembly.Location));
+            foreach (string path in GetNativeLibrarySearchPaths())
+            {
+                if (TryLoadNativeLibrary(path))
+                    return;
+            }
+        }
+
+        private static IEnumerable<string> GetNativeLibrarySearchPaths()
+        {
+            yield return AppDomain.CurrentDomain.RelativeSearchPath;
+            yield return Path.GetDirectoryName(typeof(NativeMethods).Assembly.Location);
+            yield return AppDomain.CurrentDomain.BaseDirectory;
         }
 
         private static bool TryLoadNativeLibrary(string path)
         {
-            if (path == null)
+            if (string.IsNullOrEmpty(path))
                 return false;
 
-            path = Path.Combine(path, IntPtr.Size == 4 ? "x86" : "x64");
-            path = Path.Combine(path, "Pdfium.dll");
+            string platform = GetNativeLibraryPlatform();
 
-            return File.Exists(path) && LoadLibrary(path) != IntPtr.Zero;
+            string[] candidatePaths = new[]
+            {
+                Path.Combine(Path.Combine(path, platform), "Pdfium.dll"),
+                Path.Combine(Path.Combine(Path.Combine(Path.Combine(path, "runtimes"), "win-" + platform), "native"), "pdfium.dll"),
+                Path.Combine(path, "Pdfium.dll")
+            };
+
+            foreach (string candidatePath in candidatePaths)
+            {
+                if (File.Exists(candidatePath) && LoadLibrary(candidatePath) != IntPtr.Zero)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static string GetNativeLibraryPlatform()
+        {
+            if (IntPtr.Size == 4)
+                return "x86";
+
+#if NETCOREAPP3_1_OR_GREATER || NET
+            switch (RuntimeInformation.ProcessArchitecture)
+            {
+                case Architecture.Arm64:
+                    return "arm64";
+                case Architecture.X86:
+                    return "x86";
+                default:
+                    return "x64";
+            }
+#else
+            string processorArchitecture = Environment.GetEnvironmentVariable("PROCESSOR_ARCHITECTURE");
+
+            if (!string.IsNullOrEmpty(processorArchitecture) && processorArchitecture.Equals("ARM64", StringComparison.OrdinalIgnoreCase))
+                return "arm64";
+
+            return "x64";
+#endif
         }
 
         [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Auto)]

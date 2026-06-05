@@ -9,7 +9,7 @@ This is an updated fork of the archived **[pvginkel/PdfiumViewer](https://github
 
 - Merged all relevant [open pull requests](https://github.com/pvginkel/PdfiumViewer/pulls) of the original repo
 - Updated to newer PDFium binaries from https://github.com/bblanchon/pdfium-binaries
-- Added **.NET Core 3.1** and **.NET 6** as new targets
+- Added a modern **.NET 10** Windows target
 
 ## Introduction
 
@@ -36,6 +36,15 @@ reference the native libraries.
 The PdfiumViewer control requires native PDFium libraries. These are not included
 in the PdfiumViewer NuGet package. See the [Installation instructions](https://github.com/pvginkel/PdfiumViewer/wiki/Installation-instructions)
 Wiki page for more information on how to add these.
+
+For the demo applications in this repository, native PDFium binaries come from the
+`bblanchon.PDFium.Win32` NuGet package, which includes `win-x86`, `win-x64`, and
+`win-arm64` builds. To run natively on Windows ARM64, build or publish the demo app
+for `ARM64` / `win-arm64`. No manual DLL download is required for the demo projects.
+
+If you reference `PdfiumViewer` from your own application, add a reference to
+`bblanchon.PDFium.Win32` in the executable project or copy `Pdfium.dll` to an
+`arm64` folder next to your app.
 
 ## Note on the `PdfViewer` control
 
